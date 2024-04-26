@@ -6,5 +6,6 @@ router.route("/createtask").post(taskControl.CreateTask);
 router.route("/edittask").put(taskControl.editTask);
 router.route("/deletetask").delete(taskControl.deleteTask);
 router.route("/taskaccess").get(taskControl.TaskListing);
+router.route("/Authtaskaccess").get(taskControl.AuthUserTaskListing);
 
 module.exports = router;

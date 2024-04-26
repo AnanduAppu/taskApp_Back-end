@@ -25,8 +25,10 @@ const CreateTask= asyncHandler(async(req,res)=>{
   
     existingUser.tasks.push(yourTask._id);
     await existingUser.save()
-    
-    res.status(200).json({success:true,message:"task created",data:yourTask})
+
+    const authuser = await userModel.findOne({_id:userID}).populate('tasks')
+    const allTask=authuser.tasks
+    res.status(200).json({success:true,message:"task created",Data:allTask})
   })
 
 
@@ -39,6 +41,26 @@ const CreateTask= asyncHandler(async(req,res)=>{
       success:true
     })
   })
+
+
+
+
+  //listing the task of auth user
+  const AuthUserTaskListing = asyncHandler(async(req,res)=>{
+    const UserId  = req.query.userId;
+
+    const existingUser = await userModel.findOne({_id:UserId }).populate('tasks')
+    if(!existingUser){
+      return res.status(401).json({ successful: false, error: "Unauthorized" });
+    }
+    const TaskList = existingUser.tasks
+
+    res.status(200).json({
+      task:TaskList,
+      success:true
+    })
+  })
+
 
 
 
@@ -78,9 +100,25 @@ const CreateTask= asyncHandler(async(req,res)=>{
    
     const checkTask = await taskModel.findOne({_id:taskid})
 
+
     if (!checkTask) {
         return res.status(404).json({ success: false, message: 'Task not found' });
     }
+
+    const userid = checkTask.user
+
+    const checkUser = await userModel.findOne({_id: userid})
+
+
+    if(!checkUser){
+      return res.status(404).json({ success: false, message: 'user not found' });
+    }
+
+    await userModel.updateOne(
+      { _id: userid },
+      { $pull: { tasks: taskid } }
+    );
+
 
     await taskModel.deleteOne({ _id: taskid });
   
@@ -91,5 +129,6 @@ const CreateTask= asyncHandler(async(req,res)=>{
     CreateTask,
     TaskListing,
     editTask,
-    deleteTask
+    deleteTask,
+    AuthUserTaskListing
 }
